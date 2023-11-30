@@ -1,0 +1,12 @@
+CSE302 - Final Project - Structured and Aggregate Types
+
+Etienne Leroy, Amine Roudani, Lucas Nelson
+
+
+	- Extending the parser to handle BX pointers and arrays - Etienne (for now)
+
+	- Type checking BX pointers and arrays - Amine (for now)
+
+	- Extending TAC with 'load' and 'store' instructions - Lucas (for now)
+
+	- Emitting x64 for these Extensions - we'll figure it out 
