@@ -62,6 +62,11 @@ class Lexer:
         'SLASH'    ,
         'STAR'     ,
         'TILD'     ,
+
+        # Define Brackets for arrays 
+        'LBRACKET' , 
+        'RBRACKET' ,
+
     ) + tuple(keywords.values())
 
     t_LPAREN    = re.escape('(')
@@ -93,6 +98,10 @@ class Lexer:
     t_SLASH     = re.escape('/')
     t_STAR      = re.escape('*')
     t_TILD      = re.escape('~')
+
+    # Brackets 
+    t_LBRACKET = re.escape('[')
+    t_RBRACKET = re.escape(']')
 
     t_ignore = ' \t'            # Ignore all whitespaces
     t_ignore_comment = r'//.*'

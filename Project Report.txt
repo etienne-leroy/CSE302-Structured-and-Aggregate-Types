@@ -5,6 +5,11 @@ Etienne Leroy, Amine Roudani, Lucas Nelson
 
 	- Extending the parser to handle BX pointers and arrays - Etienne (for now)
 
+		To achieve this objective, we first modified the lexer (bxlexer.py). We added 4 tokens for the left and right brackets ([]), the ampersand (&), 
+		and times (*), in order to handle pointers and arrays.
+
+		
+
 	- Type checking BX pointers and arrays - Amine (for now)
 
 	- Extending TAC with 'load' and 'store' instructions - Lucas (for now)
