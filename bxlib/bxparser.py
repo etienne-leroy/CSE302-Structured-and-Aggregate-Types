@@ -41,18 +41,19 @@ class Parser:
     start = 'prgm'
 
     precedence = (
-        ('left'    , 'PIPEPIPE'                ),
-        ('left'    , 'AMPAMP'                  ),
-        ('left'    , 'PIPE'                    ),
-        ('left'    , 'HAT'                     ),
-        ('left'    , 'AMP'                     ),
-        ('nonassoc', 'EQEQ', 'BANGEQ'          ),
-        ('nonassoc', 'LT', 'LTEQ', 'GT', 'GTEQ'),
-        ('left'    , 'LTLT', 'GTGT'            ),
-        ('left'    , 'PLUS', 'DASH'            ),
-        ('left'    , 'STAR', 'SLASH', 'PCENT'  ),
-        ('right'   , 'BANG', 'UMINUS'          ),
-        ('right'   , 'UNEG'                    ),
+        ('left'    , 'PIPEPIPE'                     ),
+        ('left'    , 'AMPAMP'                       ),
+        ('left'    , 'PIPE'                         ),
+        ('left'    , 'HAT'                          ),
+        ('left'    , 'AMP'                          ),
+        ('nonassoc', 'EQEQ', 'BANGEQ'               ),
+        ('nonassoc', 'LT', 'LTEQ', 'GT', 'GTEQ'     ),
+        ('left'    , 'LTLT', 'GTGT'                 ),
+        ('left'    , 'PLUS', 'DASH'                 ),
+        ('left'    , 'STAR', 'SLASH', 'PCENT'       ),
+        ('right'   , 'BANG', 'UMINUS'               ),
+        ('right'   , 'UNEG'                         ),
+        ('left', 'DOT', 'LBRACKET', 'RBRACKET', 'TO'),     # Define precedence for brackets - check
     )
 
     def __init__(self, reporter: Reporter):
@@ -76,6 +77,17 @@ class Parser:
             start = (p.linespan(1)[0], self.lexer.column_of_pos(p.lexspan(1)[0])    ),
             end   = (p.linespan(n)[1], self.lexer.column_of_pos(p.lexspan(n)[1]) + 1),
         )
+
+    def p_expr_alloc(self, p):                         # ALLOC expression with brackets 
+        '''expr : ALLOC type LBRACKET expr RBRACKET
+                | ALLOC type LBRACKET NUMBER RBRACKET'''
+        arg = p[4]
+        if isinstance(p[4], int):
+            arg = ast.Number(p[4], None, None)
+
+        p[0] = ast.Alloc(arg, p[2], p.lineno(
+            1), self.lex.find_tok_column(p, 1))
+
 
     def p_name(self, p):
         """name : IDENT"""
