@@ -6,7 +6,6 @@ import argparse
 import os
 import subprocess as sp
 import sys
-import pprint
 
 ########################
 
