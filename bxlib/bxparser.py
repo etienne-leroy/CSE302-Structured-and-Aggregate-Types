@@ -61,9 +61,11 @@ class Parser:
         ('left'    , 'STAR', 'SLASH', 'PCENT'  ),
         ('right'   , 'BANG', 'UMINUS'          ),
         ('right'   , 'UNEG'                    ),
-        # NEW 
-        ('right', 'REF', 'DEREF'),
-        ('left', 'LBRACKET', 'RBRACKET'),
+
+        # New Precedence 
+        ('right'  , 'BITCOMPL'                 ),
+        ('right'   , 'REF', 'DEREF'            ),
+        ('left'    , 'DOT', 'LBRACKET', 'RBRACKET', 'TO'),
     )
 
     def __init__(self, reporter: Reporter):
@@ -115,8 +117,6 @@ class Parser:
         p[0] = Type.ARRAY
 ##################################################################################################
 
-
-
     def p_expression_var(self, p):
         """expr : name"""
         p[0] = VarExpression(
@@ -138,9 +138,8 @@ class Parser:
             value    = p[1],
             position = self._position(p),
         )
-#############################################
-# New Stuff
-    def p_expression_null(self, p):
+############################################# 
+    def p_expression_null(self, p):     
         """expr : NULL"""
         p[0] = NullExpression(
             value    = None,
