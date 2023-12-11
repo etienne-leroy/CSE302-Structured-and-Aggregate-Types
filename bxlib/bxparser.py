@@ -26,7 +26,7 @@ class Parser:
     BINOP = {
         '+'  : 'addition'                 ,
         '-'  : 'subtraction'              ,
-        '*'  : 'multiplication'           ,
+        '*'  : 'multiplication'                     ,
         '/'  : 'division'                 ,
         '%'  : 'modulus'                  ,
         '>>' : 'logical-right-shift'      ,
@@ -63,9 +63,9 @@ class Parser:
         ('right'   , 'UNEG'                    ),
 
         # NEW PRECEDENCE 
-        ('right'   , 'BITCOMPL'                         ),
-        ('right'   , 'REF', 'DEREF'                     ),
-        ('left'    , 'DOT', 'LBRACKET', 'RBRACKET', 'TO'), 
+        ('right'   , 'BITCOMPL'                          ),
+        ('right'   , 'REF', 'DEREF'                      ),
+        ('left'    , 'STAR', 'LBRACKET', 'RBRACKET', 'TO'), 
     )
 
     def __init__(self, reporter: Reporter):
@@ -206,7 +206,6 @@ class Parser:
                 position      = self._position(p)
             )
 
-
 #############################################
 
     def p_expression_uniop(self, p):
@@ -266,7 +265,6 @@ class Parser:
             argument = p[3],
             position = self._position(p),
         )
-
 
     def p_exprs_comma_1(self, p):
         """exprs_comma_1 : expr
