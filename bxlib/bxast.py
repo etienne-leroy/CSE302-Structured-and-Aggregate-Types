@@ -13,6 +13,12 @@ class Type(enum.Enum):
     BOOL = 1
     INT  = 2
 
+    ######## 
+    # Extending to Pointers & Arrays
+    POINTER = 3
+    ARRAY = 4
+    
+
     def __str__(self):
         match self:
             case self.VOID:
@@ -21,6 +27,10 @@ class Type(enum.Enum):
                 return 'int'
             case self.BOOL:
                 return 'bool'
+            case self.POINTER:
+                return 'pointer'
+            case self.ARRAY:
+                return 'array'
 
 # --------------------------------------------------------------------
 @dc.dataclass
@@ -37,10 +47,24 @@ class Range:
 class AST:
     position: Opt[Range] = dc.field(kw_only = True, default = None)
 
+
 # --------------------------------------------------------------------
 @dc.dataclass
 class Name(AST):
     value: str
+
+########################################################################
+######### gotta create pointers cos they're not in python
+# SUBCLASS of something?
+@dc.dataclass
+class Pointer(AST):
+    referent_type: Type
+    type_: Type = Type.POINTER
+
+    def __eq__(self, other):
+        pass
+############
+########################################################################
 
 # --------------------------------------------------------------------
 @dc.dataclass
@@ -52,6 +76,7 @@ class Expression(AST):
 class VarExpression(Expression):
     name: Name
 
+
 # --------------------------------------------------------------------
 @dc.dataclass
 class BoolExpression(Expression):
@@ -61,6 +86,39 @@ class BoolExpression(Expression):
 @dc.dataclass
 class IntExpression(Expression):
     value: int
+
+########################################################################
+######### New classes for expression
+
+@dc.dataclass
+class NullExpression(Expression):
+    type_: None
+
+
+@dc.dataclass
+class ReferenceExpression(Expression):
+    value: Expression
+    
+
+@dc.dataclass
+class DereferenceExpression(Expression):
+    pointer_expr: Expression  # Expression that results in a pointer
+
+@dc.dataclass
+class AccessExpression(Expression):
+    array_expr: Expression  # Expression to access (e.g., array or pointer)
+    index: int         # int used as an index or key
+
+@dc.dataclass
+class AllocateExpression(Expression):
+    value: Expression
+    alloc_type_ : Type
+
+
+
+    
+##########  
+########################################################################
 
 # --------------------------------------------------------------------
 @dc.dataclass
@@ -159,5 +217,13 @@ class ProcDecl(TopDecl):
     body: Statement
 
 # --------------------------------------------------------------------
+
+
+
+
+
+
+
+
 Block   = list[Statement]
 Program = list[TopDecl]

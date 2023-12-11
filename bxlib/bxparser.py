@@ -1,9 +1,18 @@
 # --------------------------------------------------------------------
 import ply.yacc
 
-from .bxast    import *
-from .bxerrors import Reporter
-from .bxlexer  import Lexer
+########################
+import argparse
+import os
+import subprocess as sp
+import sys
+import pprint
+
+########################
+
+from bxast    import *
+from bxerrors import Reporter, DefaultReporter
+from bxlexer  import Lexer
 
 # ====================================================================
 # BX parser definition
@@ -41,19 +50,21 @@ class Parser:
     start = 'prgm'
 
     precedence = (
-        ('left'    , 'PIPEPIPE'                     ),
-        ('left'    , 'AMPAMP'                       ),
-        ('left'    , 'PIPE'                         ),
-        ('left'    , 'HAT'                          ),
-        ('left'    , 'AMP'                          ),
-        ('nonassoc', 'EQEQ', 'BANGEQ'               ),
-        ('nonassoc', 'LT', 'LTEQ', 'GT', 'GTEQ'     ),
-        ('left'    , 'LTLT', 'GTGT'                 ),
-        ('left'    , 'PLUS', 'DASH'                 ),
-        ('left'    , 'STAR', 'SLASH', 'PCENT'       ),
-        ('right'   , 'BANG', 'UMINUS'               ),
-        ('right'   , 'UNEG'                         ),
-        ('left', 'DOT', 'LBRACKET', 'RBRACKET', 'TO'),     # Define precedence for brackets - check
+        ('left'    , 'PIPEPIPE'                ),
+        ('left'    , 'AMPAMP'                  ),
+        ('left'    , 'PIPE'                    ),
+        ('left'    , 'HAT'                     ),
+        ('left'    , 'AMP'                     ),
+        ('nonassoc', 'EQEQ', 'BANGEQ'          ),
+        ('nonassoc', 'LT', 'LTEQ', 'GT', 'GTEQ'),
+        ('left'    , 'LTLT', 'GTGT'            ),
+        ('left'    , 'PLUS', 'DASH'            ),
+        ('left'    , 'STAR', 'SLASH', 'PCENT'  ),
+        ('right'   , 'BANG', 'UMINUS'          ),
+        ('right'   , 'UNEG'                    ),
+        # NEW 
+        ('right', 'REF', 'DEREF'),
+        ('left', 'LBRACKET', 'RBRACKET'),
     )
 
     def __init__(self, reporter: Reporter):
@@ -78,17 +89,6 @@ class Parser:
             end   = (p.linespan(n)[1], self.lexer.column_of_pos(p.lexspan(n)[1]) + 1),
         )
 
-    def p_expr_alloc(self, p):                         # ALLOC expression with brackets 
-        '''expr : ALLOC type LBRACKET expr RBRACKET
-                | ALLOC type LBRACKET NUMBER RBRACKET'''
-        arg = p[4]
-        if isinstance(p[4], int):
-            arg = ast.Number(p[4], None, None)
-
-        p[0] = ast.Alloc(arg, p[2], p.lineno(
-            1), self.lex.find_tok_column(p, 1))
-
-
     def p_name(self, p):
         """name : IDENT"""
         p[0] = Name(
@@ -96,6 +96,8 @@ class Parser:
             position = self._position(p)
         )
 
+##################################################################################################
+    #TYPES 
     def p_type_bool(self, p):
         """type : BOOL"""
         p[0] = Type.BOOL
@@ -103,6 +105,18 @@ class Parser:
     def p_type_int(self, p):
         """type : INT"""
         p[0] = Type.INT
+  
+    #EXTENDING TO Pointers & Arrays
+    def p_type_pointer(self, p):
+        """type : STAR"""
+        p[0] = Type.POINTER
+
+    def p_type_array(self, p):
+        """type : LBRACKET NUMBER RBRACKET"""
+        p[0] = Type.ARRAY
+##################################################################################################
+
+
 
     def p_expression_var(self, p):
         """expr : name"""
@@ -125,6 +139,72 @@ class Parser:
             value    = p[1],
             position = self._position(p),
         )
+#############################################
+# New Stuff
+    def p_expression_null(self, p):
+        """expr : NULL"""
+        p[0] = NullExpression(
+            value    = None,
+            position = self._position(p),
+        )
+
+    def p_expression_assignable(self, p):
+        '''expr : assignable'''
+        p[0] = p[1]
+
+    def p_expression_reference(self, p):
+        '''expr : AMP assignable'''
+        p[0] = ReferenceExpression(
+            value    = p[2],
+            position = self._position(p),
+        )
+
+    def p_expression_alloc(self, p):
+        '''expr : ALLOC type LBRACKET expr RBRACKET
+                | ALLOC type LBRACKET NUMBER RBRACKET'''
+        arg = p[4]
+        if isinstance(p[4], int):
+            arg = IntExpression(
+                value = p[4]
+            )
+
+        p[0] = AllocateExpression(
+            value = arg,
+            alloc_type_= p[2],
+            position = self._position(p),
+        )
+     
+
+    def p_expression_sequence(self, p):
+        '''expr_seq : expr COMMA expr_seq
+                    | expr'''
+        p[0] = [p[1]] + (p[3] if len(p) > 2 else [])
+
+    def p_assignable(self, p):
+        ''' assignable : IDENT 
+                        | STAR expr %prec DEREF
+                        | expr LBRACKET expr RBRACKET
+              
+                        '''  
+        if len(p) == 2:
+            p[0] = VarExpression(
+                name     = p[1],
+                position = self._position(p)
+            )
+        elif p[1] == '*':
+            p[0] = DereferenceExpression(
+                pointer_expr    = p[1],
+                position        = self._position(p)
+            )
+        elif p[2] == '[':
+            p[0] = AccessExpression(
+                array_expr    = p[1],
+                index         = p[3],
+                position      = self._position(p)
+            )
+
+
+#############################################
 
     def p_expression_uniop(self, p):
         """expr : DASH expr %prec UMINUS
@@ -184,6 +264,7 @@ class Parser:
             position = self._position(p),
         )
 
+
     def p_exprs_comma_1(self, p):
         """exprs_comma_1 : expr
                         | exprs_comma_1 COMMA expr"""
@@ -192,6 +273,7 @@ class Parser:
         else:
             p[0] = p[1]
             p[0].append(p[3])
+
 
     def p_exprs_comma(self, p):
         """exprs_comma :
@@ -367,3 +449,48 @@ class Parser:
             # self.parser.errok()
         else:
             self.reporter('syntax error at end of file')
+
+
+
+
+#############################################################################
+#Trynna test the parser
+
+def parse_args():
+    parser = argparse.ArgumentParser(prog = os.path.basename(sys.argv[0]))
+
+    parser.add_argument('input', help = 'input file (.bx)')
+
+    aout = parser.parse_args()
+
+    if os.path.splitext(aout.input)[1].lower() != '.bx':
+        parser.error('input filename must end with the .bx extension')
+
+    return aout
+
+
+def _main():
+    args = parse_args()
+
+    try:
+        with open(args.input, 'r') as stream:
+            prgm = stream.read()
+
+    except IOError as e:
+        print(f'cannot read input file {args.input}: {e}')
+        exit(1)
+
+    reporter = DefaultReporter(source = prgm)
+    prgm = Parser(reporter = reporter).parse(prgm)
+    
+    ###
+    print(prgm)
+
+    if prgm is None:
+        exit(1)
+
+    return 
+
+
+if __name__ == '__main__':
+    _main()

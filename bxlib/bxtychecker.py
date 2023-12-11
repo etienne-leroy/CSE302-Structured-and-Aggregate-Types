@@ -61,6 +61,10 @@ class TypeChecker:
     B : Type = Type.BOOL
     I : Type = Type.INT
 
+    #Extending here?
+    P : Type = Type.POINTER
+    A : Type = Type.ARRAY
+
     SIGS = {
         'opposite'                 : ([I   ], I),
         'bitwise-negation'         : ([B   ], B),
@@ -180,7 +184,7 @@ class TypeChecker:
                 type_ = retty
 
             case PrintExpression(e):
-                self.for_expression(e);
+                self.for_expression(e)
 
                 if e.type_ is not None:
                     if e.type_ not in (Type.INT, Type.BOOL):
