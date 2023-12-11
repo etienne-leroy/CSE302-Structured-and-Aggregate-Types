@@ -62,10 +62,10 @@ class Parser:
         ('right'   , 'BANG', 'UMINUS'          ),
         ('right'   , 'UNEG'                    ),
 
-        # New Precedence 
-        ('right'  , 'BITCOMPL'                 ),
-        ('right'   , 'REF', 'DEREF'            ),
-        ('left'    , 'DOT', 'LBRACKET', 'RBRACKET', 'TO'),
+        # NEW PRECEDENCE 
+        ('right'   , 'BITCOMPL'                         ),
+        ('right'   , 'REF', 'DEREF'                     ),
+        ('left'    , 'DOT', 'LBRACKET', 'RBRACKET', 'TO'), 
     )
 
     def __init__(self, reporter: Reporter):
@@ -98,7 +98,7 @@ class Parser:
         )
 
 ##################################################################################################
-    #TYPES 
+    # TYPES 
     def p_type_bool(self, p):
         """type : BOOL"""
         p[0] = Type.BOOL
@@ -107,7 +107,7 @@ class Parser:
         """type : INT"""
         p[0] = Type.INT
   
-    #EXTENDING TO Pointers & Arrays
+    # TYPE EXTENDING to Pointers & Arrays
     def p_type_pointer(self, p):
         """type : STAR"""
         p[0] = Type.POINTER
@@ -139,6 +139,7 @@ class Parser:
             position = self._position(p),
         )
 ############################################# 
+    # NULL POINTER 
     def p_expression_null(self, p):     
         """expr : NULL"""
         p[0] = NullExpression(
@@ -150,6 +151,7 @@ class Parser:
         '''expr : assignable'''
         p[0] = p[1]
 
+    # REFERENCING 
     def p_expression_reference(self, p):
         '''expr : AMP assignable'''
         p[0] = ReferenceExpression(
@@ -157,6 +159,7 @@ class Parser:
             position = self._position(p),
         )
 
+    # ALLOC EXPRESSION 
     def p_expression_alloc(self, p):
         '''expr : ALLOC type LBRACKET expr RBRACKET
                 | ALLOC type LBRACKET NUMBER RBRACKET'''
@@ -178,6 +181,8 @@ class Parser:
                     | expr'''
         p[0] = [p[1]] + (p[3] if len(p) > 2 else [])
 
+
+    # ASSIGNMENT 
     def p_assignable(self, p):
         ''' assignable : IDENT 
                         | STAR expr %prec DEREF

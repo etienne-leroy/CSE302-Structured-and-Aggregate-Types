@@ -70,10 +70,9 @@ class Lexer:
         'STAR'     ,
         'TILD'     ,
 
-        #NEW ONES
+        #NEW TOKENS
         'LBRACKET',
         'RBRACKET',
-
         'REF',
         'DEREF'
 
@@ -110,11 +109,12 @@ class Lexer:
     t_STAR      = re.escape('*')
     t_TILD      = re.escape('~')
 
-    t_LBRACKET = r'\['
-    t_RBRACKET = r'\]'
+    # New DEFINITIONS 
+    t_LBRACKET = re.escape('[')
+    t_RBRACKET = re.escape(']')
 
     t_ignore = ' \t'            # Ignore all whitespaces
-    t_ignore_comment = r'//.*'
+    t_ignore_comment = '//.*'
 
     def __init__(self, reporter: Reporter):
         self.lexer    = ply.lex.lex(module = self)
