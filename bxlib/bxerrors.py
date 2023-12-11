@@ -6,7 +6,7 @@ import sys
 
 from typing import Optional as Opt
 
-from .bxast import *
+from bxast import *
 
 # ====================================================================
 class _ReporterContextManager:

@@ -3,8 +3,8 @@ import bisect
 import ply.lex
 import re
 
-from .bxast    import Range
-from .bxerrors import Reporter
+from bxast    import Range
+from bxerrors import Reporter
 
 # ====================================================================
 # BX lexer definition
@@ -25,6 +25,13 @@ class Lexer:
             'true'    ,
             'var'     ,
             'while'   ,
+            
+            #NEW ONES
+            'null',
+            'void',
+            'type',
+            'alloc'
+
         )
     }
     
@@ -63,9 +70,13 @@ class Lexer:
         'STAR'     ,
         'TILD'     ,
 
-        # Define Brackets for arrays 
-        'LBRACKET' , 
-        'RBRACKET' ,
+        #NEW ONES
+        'LBRACKET',
+        'RBRACKET',
+
+        'REF',
+        'DEREF'
+
 
     ) + tuple(keywords.values())
 
@@ -99,9 +110,8 @@ class Lexer:
     t_STAR      = re.escape('*')
     t_TILD      = re.escape('~')
 
-    # Brackets 
-    t_LBRACKET = re.escape('[')
-    t_RBRACKET = re.escape(']')
+    t_LBRACKET = r'\['
+    t_RBRACKET = r'\]'
 
     t_ignore = ' \t'            # Ignore all whitespaces
     t_ignore_comment = r'//.*'
