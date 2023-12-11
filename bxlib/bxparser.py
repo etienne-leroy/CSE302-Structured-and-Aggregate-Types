@@ -65,7 +65,7 @@ class Parser:
         # NEW PRECEDENCE 
         ('right'   , 'BITCOMPL'                          ),
         ('right'   , 'REF', 'DEREF'                      ),
-        ('left'    , 'STAR', 'LBRACKET', 'RBRACKET', 'TO'), 
+        ('left'    , 'STAR', 'LBRACKET', 'RBRACKET'), 
     )
 
     def __init__(self, reporter: Reporter):
