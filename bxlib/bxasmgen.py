@@ -207,6 +207,32 @@ class AsmGen_x64_Linux(AsmGen):
             self._emit('movq', self._temp(ret), '%rax')
         self._emit('jmp', self._endlbl)
 
+    def _emit_load(self,target_address_elems,t):
+
+        (tb,ti,ns,no) = target_address_elems
+        if ti != 0: # e.g., 0(%rax, %rcx, 8)
+            target = f"{no}({tb},{ti},{ns})"
+        elif ti == 0 and no != 0: # e.g., 4(%rax)
+            target = f"{no}({tb})"
+        else: # e.g., (%rax)
+            target = f"({tb})"
+
+        self._emit('leaq', target, '%r11')
+        self._emit('movq', '%r11', self._temp(t))
+
+    def _emit_store(self,target_address_elems,t):
+
+        (tb,ti,ns,no) = target_address_elems
+        if ti != 0: # e.g., 0(%rax, %rcx, 8)
+            target = f"{no}({tb},{ti},{ns})"
+        elif ti == 0 and no != 0: # e.g., 4(%rax)
+            target = f"{no}({tb})"
+        else: # e.g., (%rax)
+            target = f"({tb})"
+
+        self._emit('leaq', target, '%r11')
+        self._emit('movq', t, self._temp('%r11'))
+
     @classmethod
     def lower1(cls, tac: TACProc | TACVar) -> list[str]:
         emitter = cls()
