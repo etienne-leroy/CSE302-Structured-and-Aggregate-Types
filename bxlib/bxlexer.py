@@ -26,7 +26,7 @@ class Lexer:
             'var'     ,
             'while'   ,
             
-            #NEW ONES
+            # NEW Keywords 
             'null',
             'void',
             'type',
@@ -70,7 +70,7 @@ class Lexer:
         'STAR'     ,
         'TILD'     ,
 
-        #NEW TOKENS
+        # NEW tokens 
         'LBRACKET',
         'RBRACKET',
         'REF',
@@ -109,7 +109,7 @@ class Lexer:
     t_STAR      = re.escape('*')
     t_TILD      = re.escape('~')
 
-    # New DEFINITIONS 
+    # New PUNCTUATION 
     t_LBRACKET = re.escape('[')
     t_RBRACKET = re.escape(']')
 

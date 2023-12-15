@@ -5,13 +5,16 @@ Etienne Leroy, Amine Roudani, Lucas Nelson
 
 	- Extending the parser to handle BX pointers and arrays - Etienne (for now)
 
-		To achieve this objective, we first modified the lexer (bxlexer.py). We added 4 tokens for the left and right brackets ([]), the ampersand (&), 
-		and times (*), in order to handle pointers and arrays.
+		To achieve this objective, we first modified the lexer (bxlexer.py). We added new tokens for punctuation and keywords to handle the new pointers and arrays.
+
+		To extend the parser, we define new types for pointers and arrays, as well as definitions for the null pointer, referencing, alloc, assignables, etc.
+		
+
 
 		
 
-	- Type checking BX pointers and arrays - Amine (for now)
+	- Type checking BX pointers and arrays : 
 
-	- Extending TAC with 'load' and 'store' instructions - Lucas (for now)
+	- Extending TAC with 'load' and 'store' instructions :
 
-	- Emitting x64 for these Extensions - we'll figure it out 
+	- Emitting x64 for these Extensions : 

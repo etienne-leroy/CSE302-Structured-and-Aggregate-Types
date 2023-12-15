@@ -62,10 +62,10 @@ class Parser:
         ('right'   , 'BANG', 'UMINUS'          ),
         ('right'   , 'UNEG'                    ),
 
-        # NEW PRECEDENCE 
-        ('right'   , 'BITCOMPL'                          ),
-        ('right'   , 'REF', 'DEREF'                      ),
-        ('left'    , 'STAR', 'LBRACKET', 'RBRACKET'), 
+    # NEW PRECEDENCE 
+       # ('right'   , 'BITCOMPL'                          ),
+       # ('right'   , 'REF', 'DEREF'                      ),
+       # ('left'    , 'STAR', 'LBRACKET', 'RBRACKET'      ), 
     )
 
     def __init__(self, reporter: Reporter):
@@ -97,7 +97,6 @@ class Parser:
             position = self._position(p)
         )
 
-##################################################################################################
     # TYPES 
     def p_type_bool(self, p):
         """type : BOOL"""
@@ -107,7 +106,7 @@ class Parser:
         """type : INT"""
         p[0] = Type.INT
   
-    # TYPE EXTENDING to Pointers & Arrays
+    # TYPE EXTENDING to Pointers & Arrays ------------------- WAIT UNTIL LUCAS FINISHED MM
     def p_type_pointer(self, p):
         """type : STAR"""
         p[0] = Type.POINTER
@@ -115,7 +114,14 @@ class Parser:
     def p_type_array(self, p):
         """type : LBRACKET NUMBER RBRACKET"""
         p[0] = Type.ARRAY
-##################################################################################################
+
+    # REFERENCING 
+    def p_expression_reference(self, p):
+        '''expr : AMP assignable'''
+        p[0] = ReferenceExpression(
+            value    = p[2],
+            position = self._position(p),
+        )
 
     def p_expression_var(self, p):
         """expr : name"""
@@ -138,7 +144,8 @@ class Parser:
             value    = p[1],
             position = self._position(p),
         )
-############################################# 
+
+
     # NULL POINTER 
     def p_expression_null(self, p):     
         """expr : NULL"""
@@ -151,13 +158,7 @@ class Parser:
         '''expr : assignable'''
         p[0] = p[1]
 
-    # REFERENCING 
-    def p_expression_reference(self, p):
-        '''expr : AMP assignable'''
-        p[0] = ReferenceExpression(
-            value    = p[2],
-            position = self._position(p),
-        )
+
 
     # ALLOC EXPRESSION 
     def p_expression_alloc(self, p):
@@ -206,7 +207,6 @@ class Parser:
                 position      = self._position(p)
             )
 
-#############################################
 
     def p_expression_uniop(self, p):
         """expr : DASH expr %prec UMINUS
@@ -246,6 +246,7 @@ class Parser:
             arguments = [p[1], p[3]],
             position  = self._position(p),
         )
+
 
     def p_expression_group(self, p):
         """expr : LPAREN expr RPAREN"""
@@ -454,44 +455,3 @@ class Parser:
 
 
 
-#############################################################################
-#Trynna test the parser
-
-def parse_args():
-    parser = argparse.ArgumentParser(prog = os.path.basename(sys.argv[0]))
-
-    parser.add_argument('input', help = 'input file (.bx)')
-
-    aout = parser.parse_args()
-
-    if os.path.splitext(aout.input)[1].lower() != '.bx':
-        parser.error('input filename must end with the .bx extension')
-
-    return aout
-
-
-def _main():
-    args = parse_args()
-
-    try:
-        with open(args.input, 'r') as stream:
-            prgm = stream.read()
-
-    except IOError as e:
-        print(f'cannot read input file {args.input}: {e}')
-        exit(1)
-
-    reporter = DefaultReporter(source = prgm)
-    prgm = Parser(reporter = reporter).parse(prgm)
-    
-    ###
-    print(prgm)
-
-    if prgm is None:
-        exit(1)
-
-    return 
-
-
-if __name__ == '__main__':
-    _main()
