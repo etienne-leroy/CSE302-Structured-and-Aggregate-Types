@@ -144,8 +144,8 @@ class TypeChecker:
         type_ = None
 
         match expr:
-####################################  
-#### Adding new cases for pointers and arrays          
+
+# Adding new cases for pointers and arrays          
             case NullExpression(_):
                 type_ = Pointer(Type.VOID)
 
@@ -175,8 +175,7 @@ class TypeChecker:
                 else:
                     self.report(f'Invalid access expression', position=expr.position)
 
-####            
-####################################            
+
             case VarExpression(name):
                 if self.check_local_bound(name):
                     type_ = self.scope[name.value]

@@ -3,17 +3,16 @@ CSE302 - Final Project - Structured and Aggregate Types
 Etienne Leroy, Amine Roudani, Lucas Nelson
 
 
-	- Extending the parser to handle BX pointers and arrays - Etienne (for now)
+	- Extending the parser to handle BX pointers and arrays : 
 
 		To achieve this objective, we first modified the lexer (bxlexer.py). We added new tokens for punctuation and keywords to handle the new pointers and arrays.
 
 		To extend the parser, we define new types for pointers and arrays, as well as definitions for the null pointer, referencing, alloc, assignables, etc.
-		
 
-
-		
 
 	- Type checking BX pointers and arrays : 
+
+		We extended the type checker to handle pointers and arrays, and added new cases for pointers and arrays. 
 
 	- Extending TAC with 'load' and 'store' instructions :
 
