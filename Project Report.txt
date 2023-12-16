@@ -19,3 +19,15 @@ Etienne Leroy, Amine Roudani, Lucas Nelson
 	- Extending TAC with 'load' and 'store' instructions :
 
 	- Emitting x64 for these Extensions : 
+		Added six functions to extend x64 emissions for asssignment tasks:
+		- _emit_memory_array_copy
+		- _emit_memory_load
+		- _emit_memory_store
+		- _emit_memory_pointer
+		- _emit_memory_allocation
+		- _emit_memory_initialization
+
+		The first four functions clearly directly serve to extend x64 for arrays, pointers, load, and store,
+		all of which were assigned tasks.
+		Meanwhile, the last two are helper functions to facilitate the initialization and dynamic allocation of memory
+		directly from the bxmm.py file.

@@ -207,32 +207,63 @@ class AsmGen_x64_Linux(AsmGen):
             self._emit('movq', self._temp(ret), '%rax')
         self._emit('jmp', self._endlbl)
 
-    def _emit_load(self,target_address_elems,t):
 
-        (tb,ti,ns,no) = target_address_elems
-        if ti != 0: # e.g., 0(%rax, %rcx, 8)
-            target = f"{no}({tb},{ti},{ns})"
-        elif ti == 0 and no != 0: # e.g., 4(%rax)
-            target = f"{no}({tb})"
-        else: # e.g., (%rax)
-            target = f"({tb})"
+    # NEW FUNCTIONS FOR ASSIGNMENT
+    def _emit_memory_array_copy(self, target_temp, src_temp, offset):
+        
+        self._emit("movq", self._temp(src_temp), "%r13")
+        self._emit("movq", self._temp(target_temp), "%r14")
+        self._emit("movq", f"${offset}", "%r15")
 
-        self._emit('leaq', target, '%r11')
-        self._emit('movq', '%r11', self._temp(t))
+        self._emit("movq", "$0", "%rax") # Zero out %rax when emitting "callq"
+        self._emit("callq", "copy_array", "%r14", "%r13", "%r15")
 
-    def _emit_store(self,target_address_elems,t):
+    def _emit_memory_load(self, address, target_register):
+        
+        (mem_register, offset) = address if isinstance(address, tuple) else (address, 0)
+        destination = f"{offset}({mem_register})" if offset != 0 else f"({mem_register})"
 
-        (tb,ti,ns,no) = target_address_elems
-        if ti != 0: # e.g., 0(%rax, %rcx, 8)
-            target = f"{no}({tb},{ti},{ns})"
-        elif ti == 0 and no != 0: # e.g., 4(%rax)
-            target = f"{no}({tb})"
-        else: # e.g., (%rax)
-            target = f"({tb})"
+        self._emit("movq", self._temp(destination), '%r8')
+        self._emit("addq", f"${offset}", "%r8")
+        self._emit("movq", "(%r8)", "%r9")
+        self._emit("movq", "%r9", self._temp(target_register))
+        
+    def _emit_memory_store(self, input_data, target_address):
+        
+        (mem_register, offset) = target_address if isinstance(target_address, tuple) else (target_address, 0)
+        destination = f"{offset}({mem_register})" if offset != 0 else f"({mem_register})"
+        
+        self._emit("movq", self._temp(destination), '%r10')
+        self._emit("addq", f"${offset}", "%r10")
+        self._emit("movq", self._temp(input_data), "%r11")
+        self._emit("movq", "%r11", "(%r10)")
+        
+    def _emit_memory_pointer(self, source_temp, target_temp):
 
-        self._emit('leaq', target, '%r11')
-        self._emit('movq', t, self._temp('%r11'))
+        self._emit("leaq", self._temp(source_temp), "%r12")
+        self._emit("movq", "%r12", self._temp(target_temp))
+        
+    def _emit_memory_allocation(self, count_temp, size_temp, target_temp):
 
+        self._emit("movq", f"${size_temp}", "%rsi") # Pass first six integer/pointer params to callq
+        self._emit("movq", self._temp(count_temp), "%rdi") # Pass first six integer/pointer params to callq
+
+        self._emit("movq", "$0", "%rax")  # Zero out %rax when emitting "callq"
+        self._emit("callq", "alloc")
+        
+        self._emit("movq", "%rax", self._temp(target_temp)) # Fetch output of callq
+
+    def _emit_memory_initialization(self, target_temp, byte_count):
+        
+        self._emit("movq", f"${byte_count}", "%rsi") # Pass first six integer/pointer params to callq
+        self._emit("movq", self._temp(target_temp), "%rdi") # Pass first six integer/pointer params to callq
+
+        self._emit("movq", "$0", "%rax")  # Zero out %rax when emitting "callq"
+        self._emit("callq", "zero_out")
+        
+    # END OF ASSIGNMENT FUNCTIONS
+    
+    
     @classmethod
     def lower1(cls, tac: TACProc | TACVar) -> list[str]:
         emitter = cls()
