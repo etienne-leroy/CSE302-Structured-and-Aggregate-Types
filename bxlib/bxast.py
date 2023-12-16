@@ -24,10 +24,7 @@ class Type(enum.Enum):
                 return 'int'
             case self.BOOL:
                 return 'bool'
-            case self.POINTER:
-                return 'pointer'
-            case self.ARRAY:
-                return 'array'
+
 
 # --------------------------------------------------------------------
 @dc.dataclass
