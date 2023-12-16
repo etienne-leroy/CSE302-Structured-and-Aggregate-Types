@@ -12,13 +12,10 @@ class Type(enum.Enum):
     VOID = 0
     BOOL = 1
     INT  = 2
+    NULL = 3
 
-    ######## 
-    # Extending to Pointers & Arrays
-    POINTER = 3
-    ARRAY = 4
+
     
-
     def __str__(self):
         match self:
             case self.VOID:
@@ -54,16 +51,22 @@ class Name(AST):
     value: str
 
 ########################################################################
-######### gotta create pointers cos they're not in python
-# SUBCLASS of something?
-@dc.dataclass
-class Pointer(AST):
-    referent_type: Type
-    type_: Type = Type.POINTER
 
-    def __eq__(self, other):
-        pass
-############
+@dc.dataclass
+class PointerType(Type):
+    element_type: Type
+    
+    def __str__(self):
+        return f"{self.element_type}*"
+
+@dc.dataclass
+class ArrayType(Type):
+    element_type: Type
+    size: int
+    
+    def __str__(self):
+        return f"{self.element_type}[{self.element_type}]"
+
 ########################################################################
 
 # --------------------------------------------------------------------
@@ -111,8 +114,8 @@ class AccessExpression(Expression):
 
 @dc.dataclass
 class AllocateExpression(Expression):
-    value: Expression
-    alloc_type_ : Type
+    size: Expression
+    alloc_type : Type
 
 
 
