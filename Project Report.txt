@@ -5,9 +5,11 @@ Etienne Leroy, Amine Roudani, Lucas Nelson
 
 	- Extending the parser to handle BX pointers and arrays : 
 
-		To achieve this objective, we first modified the lexer (bxlexer.py). We added new tokens for punctuation and keywords to handle the new pointers and arrays.
-
-		To extend the parser, we define new types for pointers and arrays, as well as definitions for the null pointer, referencing, alloc, assignables, etc.
+		To achieve this objective, we first modified the lexer (bxlexer.py). We added new keywords (line 29), new tokens (line 73), and punctuation (line 112) to handle the new pointers and arrays.
+		
+		To extend the parser, we define new types for pointers and arrays, as well as definitions for the null pointer, referencing, alloc, and other assignables.
+		The new type definitions can be found from line 100, followed by referencing, the null pointer, the 'ALLOC' expression, and the assignables,
+		capable of parsing '*' pointer and '[]' array expressions. 
 
 
 	- Type checking BX pointers and arrays : 
