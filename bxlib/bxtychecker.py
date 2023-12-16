@@ -155,23 +155,24 @@ class TypeChecker:
                     type_ = Pointer(value.type_)
                 else:
                     self.report(f'Invalid reference type for {value}', position=expr.position)
-
+                    
             case AllocateExpression(value, alloc_type_):
                 self.for_expression(value, etype=Type.INT)
                 type_ = Pointer(alloc_type_)
 
+            
             case DereferenceExpression(pointer_expr):
                 self.for_expression(pointer_expr)
                 if isinstance(pointer_expr.type_, Pointer):
-                    type_ = pointer_expr.type_.type
+                    type_ = pointer_expr.type_
                 else:
                     self.report(f'Cannot dereference non-pointer type', position=expr.position)
 
             case AccessExpression(element, index):
                 self.for_expression(element)
                 self.for_expression(index, etype=Type.INT)
-                if isinstance(element.type_, (Type.ARRAY, Pointer)):
-                    type_ = element.type_.type
+                if isinstance(element.type_, (Array, Pointer)):
+                    type_ = element.type_
                 else:
                     self.report(f'Invalid access expression', position=expr.position)
 

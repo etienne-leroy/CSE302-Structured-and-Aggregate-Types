@@ -53,14 +53,14 @@ class Name(AST):
 ########################################################################
 
 @dc.dataclass
-class PointerType(Type):
+class Pointer(Type):
     element_type: Type
     
     def __str__(self):
         return f"{self.element_type}*"
 
 @dc.dataclass
-class ArrayType(Type):
+class Array(Type):
     element_type: Type
     size: int
     
@@ -110,7 +110,7 @@ class DereferenceExpression(Expression):
 @dc.dataclass
 class AccessExpression(Expression):
     array_expr: Expression  # Expression to access (e.g., array or pointer)
-    index: int         # int used as an index or key
+    index: Expression         # int used as an index or key
 
 @dc.dataclass
 class AllocateExpression(Expression):

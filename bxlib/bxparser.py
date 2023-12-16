@@ -109,11 +109,15 @@ class Parser:
     # TYPE EXTENDING to Pointers & Arrays ------------------- WAIT UNTIL LUCAS FINISHED MM
     def p_type_pointer(self, p):
         """type : STAR"""
-        p[0] = Type.POINTER
-
+        p[0] = Pointer(
+            element_type = p[1]
+        )
     def p_type_array(self, p):
         """type : LBRACKET NUMBER RBRACKET"""
-        p[0] = Type.ARRAY
+        p[0] = Array(
+            element_type = p[1],
+            size = p[3]
+        )
 
     # REFERENCING 
     def p_expression_reference(self, p):
@@ -171,8 +175,8 @@ class Parser:
             )
 
         p[0] = AllocateExpression(
-            value = arg,
-            alloc_type_= p[2],
+            size = arg,
+            alloc_type= p[2],
             position = self._position(p),
         )
      
