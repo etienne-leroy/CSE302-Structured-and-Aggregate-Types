@@ -96,10 +96,19 @@ class MM:
 
     def for_statement(self, stmt: Statement):
         match stmt:
-            case VarDeclStatement(name, init):
+            case VarDeclStatement(name, init, type_):
                 self._scope.push(name.value, self.fresh_temporary())
                 temp = self.for_expression(init)
                 self.push('copy', temp, result = self._scope[name.value])
+                
+                # Handle array type
+                if isinstance(type_, Array):
+                    array_address = self.fresh_temporary()
+                    self.push("ref", self._scope[name.value], result=array_address)
+                    array_size = type_.sizeof() * type_.element_type.sizeof()
+                    self.push("zero_out", array_address, array_size)
+                else:
+                    self.push('copy', temp, result=self._scope[name.value])
 
             case AssignStatement(lhs, rhs):
                 temp = self.for_expression(rhs)
@@ -180,6 +189,11 @@ class MM:
                 case IntExpression(value):
                     target = self.fresh_temporary()
                     self.push('const', value, result = target)
+                
+                #Adding null expression case.
+                case NullExpression():
+                    target = self.fresh_temporary()
+                    self.push("const", False, result = target)
 
                 case OpAppExpression(operator, arguments):
                     target    = self.fresh_temporary()
@@ -199,6 +213,41 @@ class MM:
                     self.push('param', 1, temp)
                     proc = self.PRINTS[argument.type_]
                     self.push('call', proc, 1)
+                
+                #Adding cases for new expression types.
+                case DereferenceExpression(pointer_expr):
+                    assert(isinstance(pointer_expr.type_, Pointer))
+                    address = self.for_expression(pointer_expr)
+                    target = self.fresh_temporary()
+                    self.push("load", address, result=target)
+                                
+                case ReferenceExpression(value):
+
+                    # Depending on the type of 'value', handle reference differently
+                    match value:
+                        case VarExpression(name):
+                            # For a variable, get its address directly
+                            target = self.fresh_temporary()
+                            var_reg = self._scope[name.value]
+                            self.push("ref", var_reg, result=target)
+
+                        case Array(array, index):
+                            # For an array element, calculate the address of the element
+                            array_address = self._scope[array.value]
+                            index_temp = self.for_expression(index)
+                            element_size = array.element_type.sizeof()
+                            offset_temp = self.fresh_temporary()
+                            target = self.fresh_temporary()
+
+                            self.push("const", element_size, result=offset_temp)
+                            self.push("mul", index_temp, offset_temp, result=offset_temp)
+                            self.push("add", array_address, offset_temp, result=target)
+
+                case AllocateExpression(allocate_type, size):
+                    target = self.fresh_temporary()
+                    bcount_reg = self.for_expression(size)   
+                    self.push("alloc", bcount_reg, allocate_type.sizeof() , result=target)
+
 
                 case _:
                     assert(False)
