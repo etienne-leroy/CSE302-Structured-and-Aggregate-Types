@@ -8,17 +8,39 @@ class AsmGen(abc.ABC):
     BACKENDS   = {}
 
     def __init__(self):
+        self._var_sizes = dict()  # Sizes of variables, dict[str, int]
         self._tparams = dict()
         self._temps   = dict()
         self._asm     = []
-
+        self._stack_offset = 0  # Tracks the stack offset in 8-byte units
+        
     def _temp(self, temp):
         if temp.startswith('@'):
             return self._format_temp(temp[1:])
         if temp in self._tparams:
             return self._format_param(self._tparams[temp])
-        index = self._temps.setdefault(temp, len(self._temps))
-        return self._format_temp(index)
+    
+        var_index = self._temps.get(temp)
+        var_size = self._var_sizes.get(temp) 
+        
+        if not var_index and not var_size:    
+            self._stack_offset += 1 
+            self._temps[temp] = self._stack_offset - 1
+            output = self._format_temp(self._stack_offset - 1)  
+            
+        elif not var_index and var_size is not None:
+            shifted_size = var_size >> 3  # RS
+            self._stack_offset += shifted_size
+            self._temps[temp] = self._stack_offset - 1
+            output = self._format_temp(self._stack_offset - 1)  
+            
+        else:
+            output = self._format_temp(var_index)
+
+        return output
+    
+    def initialize_var_sizes(self, var_sizes):
+        self._var_sizes = var_sizes
 
     @abc.abstractmethod
     def _format_temp(self, index):
@@ -279,6 +301,7 @@ class AsmGen_x64_Linux(AsmGen):
 
             case TACProc(name, arguments, ptac):
                 emitter._endlbl = f'.E_{name}'
+                emitter.initialize_var_sizes(tac.var_sizes)
 
                 for i in range(min(6, len(arguments))):
                     emitter._emit('movq', emitter.PARAMS[i], emitter._temp(arguments[i]))
