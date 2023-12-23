@@ -3,19 +3,45 @@ CSE302 - Final Project - Structured and Aggregate Types
 Etienne Leroy, Amine Roudani, Lucas Nelson
 
 
-	- Extending the parser to handle BX pointers and arrays : 
 
-		To achieve this objective, we first modified the lexer (bxlexer.py). We added new keywords (line 29), new tokens (line 73), and punctuation (line 112) to handle the new pointers and arrays.
-		
-		To extend the parser, we define new types for pointers and arrays, as well as definitions for the null pointer, referencing, alloc, and other assignables.
-		The new type definitions can be found from line 100, followed by referencing, the null pointer, the 'ALLOC' expression, and the assignables,
-		capable of parsing '*' pointer and '[]' array expressions. 
+	- Extending the Parser to Handle BX Pointers and Arrays
+Objective: 
+To parse the extended syntax of BX that includes pointers and arrays, thereby transforming source code into an appropriate Abstract Syntax Tree (AST).
+Implementation:
+To achieve this objective, we first modified the lexer (bxlexer.py). We added new keywords (line 29), new tokens (line 73), and punctuation (line 112) to handle the new pointers and arrays.
+To extend the parser, we define new types for pointers and arrays, as well as definitions for the null pointer, referencing, alloc, and other assignables.
+The new type definitions can be found from line 100, followed by referencing, the null pointer, the 'ALLOC' expression, and the assignables, capable of parsing '*' pointer and '[]' array expressions. 
+Pointers and Arrays in Types: We extended the parser to recognize pointer (*) and array ([]) types. This was achieved by introducing new productions in the grammar for type_pointer and type_array. These productions allow the parser to understand and construct AST nodes for these types.
+Reference Expression Parsing: The parser was extended to handle reference expressions (&). When an ampersand is encountered, a ReferenceExpression AST node is created, capturing the reference to a variable or an expression.
+Dereference and Access Expressions: The parser can now handle dereference (*) and array access expressions. For dereference, it creates a DereferenceExpression AST node, and for array access, it creates an AccessExpression AST node.
+Alloc Expressions: To support dynamic memory allocation, we introduced AllocateExpression in the parser. This expression handles the ALLOC keyword, followed by a type and size, allowing for dynamic allocation of memory for arrays and other data structures.
+
+	- Type Checking BX Pointers and Arrays
+Objective: 
+To ensure type safety and correctness in the context of pointers and arrays in the BX language.
+Implementation:
+Type Checking for Pointers and Arrays: The TypeChecker class was expanded to include checks for pointers and arrays. This involves ensuring the correct usage of pointers, checking pointer arithmetic, and validating array accesses.
+Handling Null Expressions: We introduced checks for NullExpression to handle the null pointer scenario, ensuring that null is only assigned to pointer types.
+Reference and Dereference Operations: The type checker verifies that reference and dereference operations are performed on valid types. For instance, a dereference operation is only allowed on pointer types.
+Array Access and Allocation: Array accesses are checked for type correctness and bounds (where possible). The allocation expressions are validated to ensure that the allocated type and size are appropriate.
+
+	- Extending TAC with 'load' and 'store' Instructions
+Objective: 
+To enable the compiler to handle pointers and array operations, we extended the TAC generation phase to include 'load' and 'store' instructions. These instructions are crucial for manipulating addresses and values in memory.
+Implementation:
+The 'load' instruction is used to retrieve a value from a memory address into a temporary variable. This is particularly useful for dereferencing pointers and accessing array elements.
+The 'store' instruction is used to write a value to a specified memory address. This instruction is essential for assignments involving pointers or array elements.
+We integrated these instructions into the for_expression and for_statement methods of the MM class. This allows handling of expressions and statements that involve pointer dereferences and array access.
+For example, in for_expression, when encountering a DereferenceExpression, we use the 'load' instruction to fetch the value pointed to by the pointer. Similarly, in for_statement, for AssignStatement involving a pointer or an array, we use the 'store' instruction to update the value at the target memory location.
 
 
-	- Type checking BX pointers and arrays : 
-
-		We extended the type checker to handle pointers and arrays, and added new cases for pointers and arrays. 
-
-	- Extending TAC with 'load' and 'store' instructions :
-
-	- Emitting x64 for these Extensions : 
+	- Emitting x64 for these Extensions
+Objective: 
+The final phase of the compiler involves translating the TAC into x64 assembly code. This step is crucial to ensure that our extensions for pointers and arrays are correctly reflected in the low-level code.
+Implementation:
+In the x64 code emission phase, we map the 'load' and 'store' TAC instructions to appropriate x64 assembly instructions.
+The 'load' instruction in TAC is translated to a combination of mov and address calculation instructions in x64. This enables the fetching of values from memory addresses.
+The 'store' instruction is translated to x64 instructions that compute the target address and use the mov instruction to store the value at the computed address.
+We also handle register allocation and memory management to ensure efficient use of system resources and adherence to x64 calling conventions.
+Additional logic was added to handle array indexing and pointer arithmetic, ensuring that operations like array access and pointer dereferencing translate correctly to x64 assembly.
+Conclusion
