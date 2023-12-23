@@ -39,9 +39,14 @@ For example, in for_expression, when encountering a DereferenceExpression, we us
 Objective: 
 The final phase of the compiler involves translating the TAC into x64 assembly code. This step is crucial to ensure that our extensions for pointers and arrays are correctly reflected in the low-level code.
 Implementation:
-In the x64 code emission phase, we map the 'load' and 'store' TAC instructions to appropriate x64 assembly instructions.
-The 'load' instruction in TAC is translated to a combination of mov and address calculation instructions in x64. This enables the fetching of values from memory addresses.
-The 'store' instruction is translated to x64 instructions that compute the target address and use the mov instruction to store the value at the computed address.
-We also handle register allocation and memory management to ensure efficient use of system resources and adherence to x64 calling conventions.
-Additional logic was added to handle array indexing and pointer arithmetic, ensuring that operations like array access and pointer dereferencing translate correctly to x64 assembly.
-Conclusion
+To extend x64 emissions for asssignment tasks:
+- _emit_memory_array_copy
+- _emit_memory_load
+- _emit_memory_store
+- _emit_memory_pointer
+- _emit_memory_allocation
+- _emit_memory_initialization
+The first four functions clearly directly serve to extend x64 for arrays, pointers, load, and store,
+all of which were assigned tasks.
+Meanwhile, the last two are helper functions to facilitate the initialization and dynamic allocation of memory
+directly from the bxmm.py file.

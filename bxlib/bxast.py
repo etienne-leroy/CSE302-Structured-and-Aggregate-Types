@@ -24,6 +24,11 @@ class Type(enum.Enum):
                 return 'int'
             case self.BOOL:
                 return 'bool'
+            case self.NULL:
+                return 'null'
+    
+    def sizeof(self):
+        return 8
 
 
 # --------------------------------------------------------------------
@@ -55,6 +60,9 @@ class Pointer(Type):
     
     def __str__(self):
         return f"{self.element_type}*"
+    
+    def sizeof(self):
+        return 8
 
 @dc.dataclass
 class Array(Type):
@@ -63,6 +71,9 @@ class Array(Type):
     
     def __str__(self):
         return f"{self.element_type}[{self.element_type}]"
+
+    def sizeof(self):
+        return self.size * self.element_type.sizeof()
 
 ########################################################################
 
@@ -112,7 +123,7 @@ class AccessExpression(Expression):
 @dc.dataclass
 class AllocateExpression(Expression):
     size: Expression
-    alloc_type : Type
+    allocate_type : Type
 
 
 
